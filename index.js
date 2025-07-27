@@ -27,7 +27,7 @@ function starter () {
 var t= Math.random();
 var datum = minusDays(daysBefore);
 xee.push(datum);
-currentValue= currentValue*0.95 + 0.1*t
+currentValue= currentValue*0.95 + 0.1*currentValue*t
 yee.push(currentValue);
 
 var e=1
