@@ -1,0 +1,20 @@
+.flex-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: stretch;
+    justify-content: space-around;
+}
+.flexer {
+    background-color: #850F8D;
+    color: #f8f9d7;
+    border-color: #f8f9d7;
+    border-radius: 10px;
+    font-size: 20px;
+    border-style:none;
+    padding: 10px;
+}
+
+.active {
+    background-color: #c738bd !important;
+}
