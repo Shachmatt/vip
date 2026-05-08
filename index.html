@@ -7,17 +7,172 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <canvas id="first" style="width:100%; background-color: #f8f9d7; color: #c738bd; max-height: 400px;"></canvas>
-
-<div class="flex-container">
-    <div>
-<button class="flexer" id="200">Last 200 days</button>
-</div><div>
-<button class="flexer" id="100" >Last 100 days</button>
-</div><div>
-<button class="flexer" id="30" >last 30 days</button></div>
+<div class="company-tabs">
+  <button class="tab-btn active" id="tab0" onclick="switchCompany(0)">Investigo a.s.</button>
+  <button class="tab-btn"        id="tab1" onclick="switchCompany(1)">TechGrow s.r.o.</button>
+  <button class="tab-btn"        id="tab2" onclick="switchCompany(2)">ValueCorp a.s.</button>
+  <button class="tab-btn"        id="tab3" onclick="switchCompany(3)">Industrial a.s.</button>
+  <div class="balance-chip">
+    <span class="balance-label">Portfolio</span>
+    <span class="balance-value" id="balanceAmt">10&nbsp;000.00</span>
+    <span class="balance-invested" id="balanceInvested"></span>
+  </div>
 </div>
 
+    <canvas id="first" style="width:100%; background-color: #f8f9d7; color: #c738bd; max-height: 400px;"></canvas>
+
+<div class="flex-container controls">
+  <button class="flexer" id="btnBack"  onclick="playBackward()">&#9664; Backward</button>
+  <button class="flexer" id="btnStop"  onclick="stopAnim()">&#9646;&#9646; Stop</button>
+  <button class="flexer" id="btnPlay"  onclick="playForward()" disabled>Forward &#9654;</button>
+</div>
+
+<!-- ── Trading Panel ─────────────────────────────────────────────────────── -->
+<div class="company-table trading-panel">
+  <div class="table-title">Stock Trading</div>
+  <div class="trade-row">
+    <div class="trade-field">
+      <label class="cell-label">Amount to Invest</label>
+      <input type="number" id="tradeInvest" class="trade-input" placeholder="e.g. 500" step="0.01" oninput="updateShareEstimate()">
+      <span class="share-estimate" id="shareEstimate"></span>
+    </div>
+    <div class="trade-field">
+      <label class="cell-label">Sell Target Price</label>
+      <input type="number" id="tradeSellTarget" class="trade-input" placeholder="e.g. 120" step="0.01">
+    </div>
+    <button class="flexer trade-btn" id="btnBuy" onclick="buyStock()">&#128200; Buy</button>
+    <button class="flexer trade-btn" id="btnSellNow" onclick="sellStock(false)" disabled>Sell Now</button>
+    <button class="flexer trade-btn end-btn" id="btnEnd" onclick="endInvesting()">&#9889; End Investing</button>
+  </div>
+  <div id="tradeLive"   class="trade-live"></div>
+  <div id="tradeResult" class="trade-result"></div>
+</div>
+
+<div class="flex-container range-bar">
+  <button class="flexer range-btn" id="btn200" onclick="jumpToView(200)">200 days</button>
+  <button class="flexer range-btn" id="btn100" onclick="jumpToView(100)">100 days</button>
+  <button class="flexer range-btn" id="btn30"  onclick="jumpToView(30)">30 days</button>
+  <button class="flexer range-btn" id="btnPortfolio" onclick="togglePortfolioView()">&#128202; All Companies</button>
+</div>
+
+<!-- ── Portfolio overview ─────────────────────────────────────────────────── -->
+<div id="portfolioView" style="display:none">
+
+  <!-- Mini playback controls shared by all four charts -->
+  <div class="port-playback">
+    <button class="flexer port-ctrl-btn" id="portBtnBack"  onclick="playBackward()">&#9664; Backward</button>
+    <button class="flexer port-ctrl-btn" id="portBtnStop"  onclick="stopAnim()">&#9646;&#9646; Stop</button>
+    <button class="flexer port-ctrl-btn" id="portBtnPlay"  onclick="playForward()" disabled>Forward &#9654;</button>
+  </div>
+
+  <div class="portfolio-grid">
+
+    <div class="port-card" id="portCard0">
+      <div id="portInfo0"></div>
+      <div class="port-chart-wrap"><canvas id="portCanvas0"></canvas></div>
+    </div>
+
+    <div class="port-card" id="portCard1">
+      <div id="portInfo1"></div>
+      <div class="port-chart-wrap"><canvas id="portCanvas1"></canvas></div>
+    </div>
+
+    <div class="port-card" id="portCard2">
+      <div id="portInfo2"></div>
+      <div class="port-chart-wrap"><canvas id="portCanvas2"></canvas></div>
+    </div>
+
+    <div class="port-card" id="portCard3">
+      <div id="portInfo3"></div>
+      <div class="port-chart-wrap"><canvas id="portCanvas3"></canvas></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="company-table">
+  <div class="table-title">Investigo a. s. &mdash; <span id="tDate">—</span></div>
+  <p class="company-desc" id="companyDesc"></p>
+  <div class="table-row">
+    <div class="table-cell">
+      <div class="cell-label">Market Price</div>
+      <div class="cell-value" id="tPrice">—</div>
+    </div>
+    <div class="table-cell">
+      <div class="cell-label">Intrinsic Value</div>
+      <div class="cell-value" id="tIntrinsic">—</div>
+    </div>
+    <div class="table-cell">
+      <div class="cell-label">vs. Intrinsic</div>
+      <div class="cell-value" id="tPremium">—</div>
+    </div>
+    <div class="table-cell">
+      <div class="cell-label">FCF Year 1</div>
+      <div class="cell-value" id="tFCF">—</div>
+    </div>
+  </div>
+</div>
+
+
+<div class="company-table raw-stats">
+
+  <div class="raw-cols">
+
+    <div class="raw-section">
+      <div class="table-title">Key Statistics</div>
+      <table class="stats-table">
+        <tbody>
+          <tr><td class="sl">EBITDA</td>          <td class="sv" id="sEBITDA">—</td></tr>
+          <tr><td class="sl">Total Assets</td>    <td class="sv" id="sAssets">—</td></tr>
+          <tr><td class="sl">Total Debt</td>       <td class="sv" id="sDebts">—</td></tr>
+          <tr><td class="sl">Cash</td>             <td class="sv" id="sCash">—</td></tr>
+          <tr><td class="sl">Dividend / share</td><td class="sv" id="sDividend">—</td></tr>
+          <tr><td class="sl">Shares Outstanding</td><td class="sv" id="sShares">—</td></tr>
+          <tr><td class="sl">Market Cap</td>      <td class="sv" id="sMarketCap">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="raw-section">
+      <div class="table-title">Quarterly History</div>
+      <table class="stats-table">
+        <thead>
+          <tr><th class="sl">Period</th><th class="sv">FCF Y1</th><th class="sv">Dividend</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="sl">Current Q</td>  <td class="sv" id="fcq0">—</td><td class="sv" id="dq0">—</td></tr>
+          <tr><td class="sl">1Q ago</td>      <td class="sv" id="fcq1">—</td><td class="sv" id="dq1">—</td></tr>
+          <tr><td class="sl">2Q ago</td>      <td class="sv" id="fcq2">—</td><td class="sv" id="dq2">—</td></tr>
+          <tr><td class="sl">3Q ago (~1 yr)</td><td class="sv" id="fcq3">—</td><td class="sv" id="dq3">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Valuation Calculator ──────────────────────────────────────────────── -->
+<div class="company-table calc-panel">
+  <div class="table-title">Valuation Calculator</div>
+  <div class="calc-top">
+    <label class="cell-label">Valuation Method</label>
+    <select id="calcType" class="calc-select" onchange="updateCalcFields()">
+      <option value="nav">NAV &mdash; Asset-based</option>
+      <option value="dcf">DCF &mdash; Discounted Cash Flow</option>
+      <option value="gordon">Gordon Growth Model</option>
+      <option value="market">Market Multiple (EV / EBITDA)</option>
+    </select>
+  </div>
+  <div id="calcFields" class="calc-fields"></div>
+  <div id="industryRef" class="industry-ref" style="display:none"></div>
+  <div class="calc-bottom">
+    <button class="flexer calc-btn" onclick="calculateValuation()">Calculate</button>
+    <div id="calcResult" class="calc-result"></div>
+  </div>
+</div>
+
+<!-- ── Summary / End-Investing page ──────────────────────────────────────── -->
+<div id="summaryPage" style="display:none"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
 

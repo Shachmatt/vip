@@ -1,3 +1,35 @@
+/* ── Company tab bar ──────────────────────────────── */
+.company-tabs {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    padding: 8px 8px 0;
+    background-color: #0e010f;
+}
+
+.tab-btn {
+    background-color: #2a0630;
+    color: #a060a8;
+    border: 1px solid #850F8D;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    font-size: 14px;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.tab-btn:hover {
+    background-color: #3d0a48;
+    color: #f8f9d7;
+}
+
+.tab-btn.active {
+    background-color: #f8f9d7;
+    color: #850F8D;
+    font-weight: bold;
+}
+
 .flex-container {
     display: flex;
     flex-direction: row;
@@ -5,16 +37,775 @@
     align-items: stretch;
     justify-content: space-around;
 }
+
+.controls {
+    margin-top: 12px;
+    gap: 12px;
+    justify-content: center;
+}
+
 .flexer {
     background-color: #850F8D;
     color: #f8f9d7;
     border-color: #f8f9d7;
     border-radius: 10px;
     font-size: 20px;
-    border-style:none;
-    padding: 10px;
+    border-style: none;
+    padding: 10px 28px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.flexer:hover {
+    background-color: #a020a8;
 }
 
 .active {
     background-color: #c738bd !important;
+    box-shadow: 0 0 8px #c738bd88;
+}
+
+#btnStop {
+    background-color: #4a0a50;
+}
+
+#btnStop:hover {
+    background-color: #6a1070;
+}
+
+.range-bar {
+    margin-top: 8px;
+    gap: 8px;
+    justify-content: center;
+}
+
+.range-btn {
+    font-size: 15px;
+    padding: 6px 20px;
+}
+
+/* ── Company info table ───────────────────────────── */
+.company-table {
+    margin: 16px auto 0;
+    width: 90%;
+    background-color: #1e0620;
+    border: 1px solid #850F8D;
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: #f8f9d7;
+}
+
+.table-title {
+    font-size: 15px;
+    color: #c738bd;
+    margin-bottom: 12px;
+    letter-spacing: 0.03em;
+}
+
+.table-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.table-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 110px;
+}
+
+.cell-label {
+    font-size: 11px;
+    color: #a060a8;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 4px;
+}
+
+.cell-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #f8f9d7;
+}
+
+/* ── Raw statistics table ─────────────────────────── */
+.raw-stats {
+    margin-top: 10px;
+}
+
+.raw-cols {
+    display: flex;
+    flex-direction: row;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.raw-section {
+    flex: 1;
+    min-width: 220px;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #3a1040;
+    font-size: 14px;
+}
+
+.sl {
+    color: #a060a8;
+    text-align: left;
+    font-weight: normal;
+}
+
+.sv {
+    color: #f8f9d7;
+    text-align: right;
+    font-weight: 600;
+}
+
+.stats-table thead th {
+    color: #c738bd;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid #850F8D;
+}
+
+/* ── Trading panel ────────────────────────────────────────────────────────── */
+.trading-panel {
+    margin-top: 10px;
+}
+
+.trade-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.trade-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.trade-input {
+    background-color: #2a0630;
+    color: #f8f9d7;
+    border: 1px solid #850F8D;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 15px;
+    width: 140px;
+    outline: none;
+}
+
+.trade-input:focus {
+    border-color: #c738bd;
+}
+
+.trade-input:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.trade-btn {
+    font-size: 15px;
+    padding: 8px 22px;
+}
+
+.trade-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.share-estimate {
+    font-size: 11px;
+    color: #c738bd;
+    margin-top: 3px;
+    min-height: 16px;
+    display: block;
+}
+
+.held-badge {
+    display: inline-block;
+    background: #3d0a48;
+    border: 1px solid #850F8D;
+    border-radius: 10px;
+    font-size: 11px;
+    padding: 1px 8px;
+    color: #c738bd;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.trade-live {
+    margin-top: 12px;
+    font-size: 15px;
+    color: #f8f9d7;
+    min-height: 22px;
+}
+
+.trade-result {
+    margin-top: 10px;
+    font-size: 15px;
+    color: #f8f9d7;
+    line-height: 1.7;
+}
+
+.tr-label {
+    color: #c738bd;
+    font-weight: bold;
+}
+
+.pnl-pos { color: #27ae60; }
+.pnl-neg { color: #c0392b; }
+
+/* ── Valuation calculator ─────────────────────────────────────────────────── */
+.calc-panel {
+    margin-top: 10px;
+    margin-bottom: 24px;
+}
+
+.calc-top {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 14px;
+}
+
+.calc-select {
+    background-color: #2a0630;
+    color: #f8f9d7;
+    border: 1px solid #850F8D;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 15px;
+    width: 280px;
+    cursor: pointer;
+    outline: none;
+}
+
+.calc-select:focus {
+    border-color: #c738bd;
+}
+
+.calc-fields {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    margin-bottom: 14px;
+}
+
+.calc-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.calc-input {
+    background-color: #2a0630;
+    color: #f8f9d7;
+    border: 1px solid #850F8D;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 15px;
+    width: 160px;
+    outline: none;
+}
+
+.calc-input:focus {
+    border-color: #c738bd;
+}
+
+.calc-bottom {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.calc-btn {
+    font-size: 15px;
+    padding: 8px 28px;
+}
+
+.calc-result {
+    font-size: 18px;
+    font-weight: bold;
+    min-height: 26px;
+}
+
+.calc-ok  { color: #27ae60; }
+.calc-err { color: #c0392b; }
+
+/* ── Balance chip (top-right of tab bar) ──────────────────────────────────── */
+.balance-chip {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 4px 16px 4px 20px;
+    border-left: 1px solid #3a0a40;
+    gap: 1px;
+}
+
+.balance-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #a060a8;
+}
+
+.balance-value {
+    font-size: 17px;
+    font-weight: bold;
+    color: #f8f9d7;
+    font-variant-numeric: tabular-nums;
+}
+
+.balance-invested {
+    font-size: 11px;
+    color: #c738bd;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Company description ──────────────────────────────────────────────────── */
+.company-desc {
+    font-size: 13px;
+    color: #c0a0c8;
+    line-height: 1.6;
+    margin: 8px 0 4px;
+    font-style: italic;
+    border-left: 2px solid #850F8D;
+    padding-left: 10px;
+}
+
+/* ── Industry EV/EBITDA reference table ───────────────────────────────────── */
+.industry-ref {
+    margin: 4px 0 14px;
+    background-color: #160318;
+    border: 1px solid #3a1040;
+    border-radius: 8px;
+    padding: 10px 14px;
+}
+
+.ref-title {
+    margin-bottom: 8px !important;
+    font-size: 12px !important;
+}
+
+/* ── Portfolio overview ────────────────────────────────────────────────────── */
+#portfolioView {
+    width: 90%;
+    margin: 12px auto 0;
+}
+
+.portfolio-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.port-card {
+    background-color: #1e0620;
+    border: 1px solid #3a1040;
+    border-radius: 12px;
+    padding: 10px 16px 12px;
+    transition: border-color 0.2s;
+}
+
+.port-card-held {
+    border-color: #850F8D;
+}
+
+.port-header {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.port-name {
+    font-size: 14px;
+    font-weight: bold;
+    min-width: 120px;
+}
+
+.port-price-wrap {
+    font-size: 13px;
+    color: #a060a8;
+}
+
+.port-price-wrap b {
+    color: #f8f9d7;
+    font-size: 16px;
+}
+
+.port-pnl {
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: auto;
+}
+
+.port-chart-wrap {
+    position: relative;
+    height: 130px;
+}
+
+/* ── Portfolio card dynamic info rows ────────────────────────────────────── */
+
+/* Header row — name / price / P&L / Sell btn */
+.port-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
+}
+
+.port-name {
+    font-size: 14px;
+    font-weight: bold;
+    min-width: 130px;
+}
+
+.port-price-wrap {
+    font-size: 13px;
+    color: #a060a8;
+}
+
+.port-price-wrap b {
+    color: #f8f9d7;
+    font-size: 16px;
+}
+
+.port-pnl {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Row shown while holding: shares · invested · target */
+.port-holding-info {
+    font-size: 12px;
+    color: #c0a0c8;
+    margin-bottom: 8px;
+    padding: 4px 8px;
+    background: #2a0630;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.port-holding-info b {
+    color: #f8f9d7;
+}
+
+/* Row shown after a sale */
+.port-sold-info {
+    font-size: 13px;
+    color: #c0a0c8;
+    margin-bottom: 8px;
+    padding: 5px 10px;
+    background: #1a0422;
+    border-radius: 6px;
+    border-left: 3px solid #27ae60;
+}
+
+.port-sold-info b { color: #f8f9d7; }
+
+.port-sold-badge {
+    display: inline-block;
+    background: #0e2e16;
+    color: #27ae60;
+    border: 1px solid #27ae60;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 10px;
+    letter-spacing: 0.04em;
+}
+
+.port-card-sold {
+    border-color: #27ae6060 !important;
+}
+
+/* Sell button inside each portfolio card */
+.port-sell-btn {
+    margin-left: auto;
+    background-color: #4a0a50;
+    color: #f8f9d7;
+    border: 1px solid #850F8D;
+    border-radius: 6px;
+    font-size: 12px;
+    padding: 4px 14px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.port-sell-btn:hover {
+    background-color: #700e78;
+}
+
+/* ── Portfolio mini playback bar ─────────────────────────────────────────── */
+.port-playback {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 0 4px;
+}
+
+.port-ctrl-btn {
+    font-size: 14px;
+    padding: 7px 20px;
+}
+
+.port-ctrl-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* ── End Investing button ────────────────────────────────────────────────── */
+.end-btn {
+    background-color: #5a0a10;
+    border: 1px solid #c0392b;
+    color: #f8f9d7;
+    margin-left: auto;
+}
+
+.end-btn:hover {
+    background-color: #8b1520;
+}
+
+/* ── Summary / End-Investing overlay ────────────────────────────────────── */
+#summaryPage {
+    position: fixed;
+    inset: 0;
+    background: #0e010f;
+    overflow-y: auto;
+    z-index: 1000;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 16px 60px;
+    box-sizing: border-box;
+}
+
+.sum-container {
+    width: 100%;
+    max-width: 780px;
+}
+
+.sum-title {
+    font-size: 30px;
+    font-weight: bold;
+    color: #f8f9d7;
+    text-align: center;
+    margin-bottom: 6px;
+    letter-spacing: 0.03em;
+}
+
+.sum-subtitle {
+    font-size: 14px;
+    color: #a060a8;
+    text-align: center;
+    margin-bottom: 28px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* ── Top overview row ── */
+.sum-overview {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    background: #1e0620;
+    border: 1px solid #850F8D;
+    border-radius: 14px;
+    padding: 18px 24px;
+    margin-bottom: 32px;
+}
+
+.sum-ov-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 28px;
+    border-right: 1px solid #3a1040;
+}
+
+.sum-ov-cell:last-child {
+    border-right: none;
+}
+
+.sum-ov-label {
+    font-size: 11px;
+    color: #a060a8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+}
+
+.sum-ov-value {
+    font-size: 26px;
+    font-weight: bold;
+    color: #f8f9d7;
+    font-variant-numeric: tabular-nums;
+}
+
+.sum-ov-pct {
+    font-size: 13px;
+    font-weight: bold;
+    margin-top: 2px;
+}
+
+/* ── Section heading ── */
+.sum-section-title {
+    font-size: 13px;
+    color: #c738bd;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 12px;
+}
+
+/* ── Per-trade cards ── */
+.sum-card {
+    background: #1e0620;
+    border: 1px solid #850F8D;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+}
+
+.sum-card-header {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.sum-comp-name {
+    font-size: 17px;
+    font-weight: bold;
+    color: #f8f9d7;
+}
+
+.sum-pnl {
+    font-size: 18px;
+    font-weight: bold;
+    margin-left: auto;
+}
+
+.sum-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px 0;
+}
+
+.sum-cell {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 120px;
+    padding: 6px 10px;
+    border-right: 1px solid #2a0630;
+}
+
+.sum-cell:last-child {
+    border-right: none;
+}
+
+.sum-cell-label {
+    font-size: 10px;
+    color: #a060a8;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 4px;
+}
+
+.sum-cell-value {
+    font-size: 16px;
+    font-weight: bold;
+    color: #f8f9d7;
+}
+
+.sum-cell-sub {
+    font-size: 11px;
+    color: #c738bd;
+    margin-top: 2px;
+}
+
+/* ── No-trades / untouched ── */
+.sum-no-trades {
+    color: #a060a8;
+    font-size: 14px;
+    font-style: italic;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.sum-untouched {
+    background: #160318;
+    border: 1px solid #3a1040;
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #c0a0c8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sum-untouched-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #3a1040;
+    flex-shrink: 0;
+}
+
+/* ── Footer / Play Again ── */
+.sum-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 36px;
+}
+
+.sum-restart-btn {
+    font-size: 18px;
+    padding: 14px 48px;
+    background-color: #850F8D;
+    color: #f8f9d7;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    font-weight: bold;
+    letter-spacing: 0.03em;
+}
+
+.sum-restart-btn:hover {
+    background-color: #a820b0;
 }
