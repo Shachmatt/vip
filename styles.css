@@ -7,6 +7,11 @@
     background-color: #0e010f;
 }
 
+.invisible {
+
+    display: none;
+}
+
 .tab-btn {
     background-color: #2a0630;
     color: #a060a8;
