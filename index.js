@@ -316,9 +316,9 @@ function showWindow() {
 
 function jumpToView(n) {
   stopAnim();
-  let rightEdge = windowStart + windowSize;
-  windowSize    = n;
+  let rightEdge = windowStart + windowSize;   // preserve current "now"
   windowStart   = Math.max(0, rightEdge - n);
+  windowSize    = rightEdge - windowStart;    // may be < n early in history — right edge never moves
   document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('btn' + n).classList.add('active');
   showWindow();
