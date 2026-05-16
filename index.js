@@ -1,9 +1,145 @@
-// ── Constants ────────────────────────────────────────────────────────────────
-let daysBefore      = 200;
-// ── Portfolio & trading state ─────────────────────────────────────────────────
-let portfolioBalance = 10000;
-// One trade slot per company (index matches COMPANIES order)
-const trades = [0,1,2,3].map(() => ({
+// ─────────────────────────────────────────────────────────────────────────────
+// APP_DATA — single source of truth for ALL configuration and company data.
+// Anything that affects simulator behaviour or display lives here. To migrate
+// to a real backend, replace this literal with:
+//     const APP_DATA = await fetch('/api/scenario').then(r => r.json());
+// and wrap the rest of the file in an async initializer.
+// ─────────────────────────────────────────────────────────────────────────────
+
+let lt1 = Math.random(), lQr1 = Math.random();
+  let ltH1 = Math.random(), lQrH1 = Math.random();
+let lt2 = Math.random(), lQr2 = Math.random();
+  let ltH2 = Math.random(), lQrH2 = Math.random();
+let lt3 = Math.random(), lQr3 = Math.random();
+  let ltH3 = Math.random(), lQrH3 = Math.random();
+let lt4 = Math.random(), lQr4 = Math.random();
+  let ltH4 = Math.random(), lQrH4 = Math.random();
+
+
+
+const APP_DATA = {
+  // ── Global simulation parameters (apply to every company) ────────────────
+  daysBefore:      200,    // legacy forward-sim length before "today"
+  futureDays:      200,    // future days unlocked one-per-tick once invested
+  histDays:        200,    // backward-simulated history days
+  valueImp:        0.03,   // mean-reversion strength
+  volBase:         0.05,   // base volatility (scaled by intrinsic per company)
+  fcfVolatility:   0.1,
+  animSpeed:       40,     // ms per playback tick
+  startingBalance: 10000,  // starting portfolio cash
+
+  // ── EV/EBITDA reference multiples by sector (calculator helper) ──────────
+  industryMultiples: [
+    { sector: 'Technology / SaaS',  low: 15, high: 30 },
+    { sector: 'Healthcare',          low: 12, high: 20 },
+    { sector: 'Consumer Staples',    low: 10, high: 16 },
+    { sector: 'Financials',          low:  8, high: 15 },
+    { sector: 'Industrials / Mfg.',  low:  5, high: 12 },
+    { sector: 'Utilities',           low:  7, high: 12 },
+    { sector: 'Energy',              low:  4, high:  9 },
+    { sector: 'Real Estate',         low: 14, high: 22 }
+  ],
+
+  // ── Per-company configuration ────────────────────────────────────────────
+  // All monetary values in millions; scaled ×1e6 inside runSimulation.
+  companies: [
+    {
+      name:        "Investigo a.s.",
+      color:       "#850F8D",
+      description: "Czech financial holding specialising in private equity, alternative investments, and wealth management. Generates steady cash flows and rewards shareholders with a growing dividend. Best valued using the Gordon Growth Model.",
+      type:        3,           // Gordon growth model
+      stockNum:    1.5,
+      FCF:         [30, 33, 36],
+      YoY:         0.10,
+      growth:      0.04,
+      assets:      150,
+      debts:       20,
+      EBITDA:      55,
+      field:       3,
+      cash:        4,
+      dividend:    10,
+      divGrowth:   0.02,
+      startPrice:  100,
+      lt: lt1,
+      lQr: lQr1,
+      ltH: ltH1,
+      lQrH: lQrH1
+    },
+    {
+      name:        "TechGrow s.r.o.",
+      color:       "#0F6D8D",
+      description: "High-growth Central European SaaS and cloud-services firm targeting SME clients. Reinvests all earnings into R&D and expansion — pays no dividend. Intrinsic value is best captured by discounting projected free cash flows (DCF).",
+      type:        2,           // DCF — high-growth tech
+      stockNum:    2,
+      FCF:         [15, 22, 32],
+      YoY:         0.25,
+      growth:      0.08,
+      assets:      80,
+      debts:       30,
+      EBITDA:      25,
+      field:       12,
+      cash:        20,
+      dividend:    0,
+      divGrowth:   0,
+      startPrice:  60,
+      lt: lt2,
+      lQr: lQr2,
+      ltH: ltH2,
+      lQrH: lQrH2
+    },
+    {
+      name:        "ValueCorp a.s.",
+      color:       "#8D6B0F",
+      description: "Diversified asset-holding company owning industrial real estate, logistics infrastructure, and minority stakes in listed businesses. Value is driven by the balance sheet rather than near-term earnings — NAV is the standard approach.",
+      type:        1,           // NAV — asset-heavy holding
+      stockNum:    3,
+      FCF:         [20, 21, 22],
+      YoY:         0.04,
+      growth:      0.02,
+      assets:      600,
+      debts:       150,
+      EBITDA:      45,
+      field:       6,
+      cash:        30,
+      dividend:    3,
+      divGrowth:   0.01,
+      startPrice:  150,
+      lt: lt3,
+      lQr: lQr3,
+      ltH: ltH3,
+      lQrH: lQrH3
+    
+    },
+    {
+      name:        "Industrial a.s.",
+      color:       "#0F8D4A",
+      description: "Traditional Czech manufacturer of precision components for automotive and aerospace clients. Stable EBITDA margins and predictable capex make the EV/EBITDA market-multiple approach the industry standard for this sector.",
+      type:        4,           // Market multiple — manufacturing
+      stockNum:    2,
+      FCF:         [35, 37, 39],
+      YoY:         0.06,
+      growth:      0.02,
+      assets:      350,
+      debts:       100,
+      EBITDA:      80,
+      field:       6,
+      cash:        25,
+      dividend:    4,
+      divGrowth:   0.02,
+      startPrice:  200,
+      lt: lt4,
+      lQr: lQr4,
+      ltH: ltH4,
+      lQrH: lQrH4
+    }
+  ]
+};
+
+// ── Portfolio & trading state (runtime, not config) ──────────────────────────
+let portfolioBalance = APP_DATA.startingBalance;
+
+// One trade slot per company (index matches APP_DATA.companies order)
+const trades = APP_DATA.companies.map(() => ({
   hasBought:      false,
   buyPrice:       0,
   buyShares:      0,
@@ -11,100 +147,12 @@ const trades = [0,1,2,3].map(() => ({
   sellTarget:     0,
   intrinsicAtBuy: 0
 }));
+
 // Last completed sale per company (shown in portfolio cards after closing)
-const lastSales = [null, null, null, null];
-let histDays        = 200;
-let valueImp        = 0.01;   // mean-reversion strength
-const VOL_BASE      = 0.05;   // base volatility (scaled by intrinsic per company)
-let fcfVolatility   = 0.1;
+const lastSales = APP_DATA.companies.map(() => null);
 
 // Shared mutable state used by value() / changeComp() / reverseComp()
 let company = { value: 200, growth: 1.002 };
-
-// ── Company definitions ──────────────────────────────────────────────────────
-// All monetary values in millions; scaled ×1e6 inside runSimulation.
-const COMPANIES = [
-  {
-    name:        "Investigo a.s.",
-    description: "Czech financial holding specialising in private equity, alternative investments, and wealth management. Generates steady cash flows and rewards shareholders with a growing dividend. Best valued using the Gordon Growth Model.",
-    type:        3,           // Gordon growth model
-    stockNum:    1.5,
-    FCF:         [30, 33, 36],
-    YoY:         0.10,
-    growth:      0.04,
-    assets:      150,
-    debts:       20,
-    EBITDA:      55,
-    field:       3,
-    cash:        4,
-    dividend:    10,
-    divGrowth:   0.02,
-    startPrice:  100
-  },
-  {
-    name:        "TechGrow s.r.o.",
-    description: "High-growth Central European SaaS and cloud-services firm targeting SME clients. Reinvests all earnings into R&D and expansion — pays no dividend. Intrinsic value is best captured by discounting projected free cash flows (DCF).",
-    type:        2,           // DCF — high-growth tech
-    stockNum:    2,
-    FCF:         [15, 22, 32],
-    YoY:         0.25,
-    growth:      0.08,
-    assets:      80,
-    debts:       30,
-    EBITDA:      25,
-    field:       12,
-    cash:        20,
-    dividend:    0,
-    divGrowth:   0,
-    startPrice:  60
-  },
-  {
-    name:        "ValueCorp a.s.",
-    description: "Diversified asset-holding company owning industrial real estate, logistics infrastructure, and minority stakes in listed businesses. Value is driven by the balance sheet rather than near-term earnings — NAV is the standard approach.",
-    type:        1,           // NAV — asset-heavy holding
-    stockNum:    3,
-    FCF:         [20, 21, 22],
-    YoY:         0.04,
-    growth:      0.02,
-    assets:      600,
-    debts:       150,
-    EBITDA:      45,
-    field:       6,
-    cash:        30,
-    dividend:    3,
-    divGrowth:   0.01,
-    startPrice:  150
-  },
-  {
-    name:        "Industrial a.s.",
-    description: "Traditional Czech manufacturer of precision components for automotive and aerospace clients. Stable EBITDA margins and predictable capex make the EV/EBITDA market-multiple approach the industry standard for this sector.",
-    type:        4,           // Market multiple — manufacturing
-    stockNum:    2,
-    FCF:         [35, 37, 39],
-    YoY:         0.06,
-    growth:      0.02,
-    assets:      350,
-    debts:       100,
-    EBITDA:      80,
-    field:       6,
-    cash:        25,
-    dividend:    4,
-    divGrowth:   0.02,
-    startPrice:  200
-  }
-];
-
-// ── EV/EBITDA reference multiples by sector ───────────────────────────────────
-const INDUSTRY_MULTIPLES = [
-  { sector: 'Technology / SaaS',   low: 15, high: 30 },
-  { sector: 'Healthcare',           low: 12, high: 20 },
-  { sector: 'Consumer Staples',     low: 10, high: 16 },
-  { sector: 'Financials',           low:  8, high: 15 },
-  { sector: 'Industrials / Mfg.',   low:  5, high: 12 },
-  { sector: 'Utilities',            low:  7, high: 12 },
-  { sector: 'Energy',               low:  4, high:  9 },
-  { sector: 'Real Estate',          low: 14, high: 22 },
-];
 
 // ── Valuation helpers ────────────────────────────────────────────────────────
 function value(compan) {
@@ -137,7 +185,7 @@ function changeComp(trade, komp) {
   komp.dividend *= (1 + komp.divGrowth) ** (1 / 365);
   for (let i = 0; i < komp.FCF.length; i++) komp.FCF[i] *= dg;
   company.value  = value(komp);
-  return (company.value - trade) * valueImp;
+  return (company.value - trade) * APP_DATA.valueImp;
 }
 
 function reverseComp(komp) {
@@ -168,16 +216,16 @@ function runSimulation(cfg) {
     debts:    cfg.debts    * 1e6,
     EBITDA:   cfg.EBITDA   * 1e6,
     cash:     cfg.cash     * 1e6,
-    FCF:      cfg.FCF.map(v => v * 1e6)
+    FCF:      cfg.FCF.map(v => v * 1e6),
   };
   let lCompStart = JSON.parse(JSON.stringify(lComp));
 
   // Independent random seeds per company
-  let lt = Math.random(), lQr = Math.random();
-  let ltH = Math.random(), lQrH = Math.random();
+  let lt = lComp.lt, lQr = lComp.lQr;
+  let ltH = lComp.ltH, lQrH = lComp.lQrH;
 
   let intrinsic0 = value(lComp);
-  let lVol = VOL_BASE * intrinsic0;
+  let lVol = APP_DATA.volBase * intrinsic0;
 
   // ── Forward (present → future) ───────────────────────────────────────────
   let lxee = [], lyee = [], lsnaps = [];
@@ -187,13 +235,13 @@ function runSimulation(cfg) {
                      debts: lComp.debts, cash: lComp.cash, dividend: lComp.dividend });
 
   // Day 0 — record startPrice exactly, noise begins from day 1
-  lxee.push(minusDays(daysBefore - 1));
+  lxee.push(minusDays(APP_DATA.daysBefore - 1));
   lyee.push(lCV);
   company.value = intrinsic0;
   lsnaps.push(snap());
 
   let le = 1, cQ = 0;
-  for (let i = 0; i < daysBefore - 1; i++) {
+  for (let i = 0; i < APP_DATA.daysBefore - 1 + APP_DATA.futureDays; i++) {
     cQ++;
     le   = logistical(lt);
     lCV += (lt * lVol * 2) - lVol;
@@ -202,7 +250,7 @@ function runSimulation(cfg) {
     if (cQ === 91) {
       let qg = Math.pow(1 + lComp.YoY, 0.25);
       for (let j = 0; j < lComp.FCF.length; j++) {
-        lComp.FCF[j] *= qg * (1 + (lQr * 2 - 1) * fcfVolatility);
+        lComp.FCF[j] *= qg * (1 + (lQr * 2 - 1) * APP_DATA.fcfVolatility);
         lQr = logistical(lQr);
       }
       cQ = 0;
@@ -211,7 +259,7 @@ function runSimulation(cfg) {
     lyee.push(lCV);
     lsnaps.push(snap());
     lt = le;
-    lxee.push(minusDays(daysBefore - i - 2));
+    lxee.push(minusDays(APP_DATA.daysBefore - i - 2));
   }
 
   // ── Backward (present → past) ────────────────────────────────────────────
@@ -219,12 +267,12 @@ function runSimulation(cfg) {
   let hPrices = [], hDates = [], hSnaps = [];
   let pH = lyee[0], cQH = 0;
 
-  for (let i = 0; i < histDays; i++) {
+  for (let i = 0; i < APP_DATA.histDays; i++) {
     cQH++;
     if (cQH === 91) {
       let qg = Math.pow(1 + lCompH.YoY, 0.25);
       for (let j = 0; j < lCompH.FCF.length; j++) {
-        lCompH.FCF[j] /= qg * (1 + (lQrH * 2 - 1) * fcfVolatility);
+        lCompH.FCF[j] /= qg * (1 + (lQrH * 2 - 1) * APP_DATA.fcfVolatility);
         lQrH = logistical(lQrH);
       }
       cQH = 0;
@@ -235,14 +283,15 @@ function runSimulation(cfg) {
     let noise = (ltH * lVol * 2) - lVol;
     ltH = eH;
 
-    pH += noise + (intr - pH) * valueImp;
-    pH = Math.max(pH, 1);
-
+    // Push BEFORE stepping so that after reversal hPrices[histDays-1] = startPrice
     hPrices.push(pH);
-    hDates.push(minusDays(daysBefore + i));
+    hDates.push(minusDays(APP_DATA.daysBefore + i));
     hSnaps.push({ intrinsic: intr, fcf: lCompH.FCF[0],
                   ebitda: lCompH.EBITDA, assets: lCompH.assets,
                   debts: lCompH.debts, cash: lCompH.cash, dividend: lCompH.dividend });
+
+    pH += noise + (intr - pH) * APP_DATA.valueImp;
+    pH = Math.max(pH, 1);
   }
 
   hPrices.reverse(); hDates.reverse(); hSnaps.reverse();
@@ -257,7 +306,7 @@ function runSimulation(cfg) {
 }
 
 // Pre-simulate every company once at load time
-const allSimData = COMPANIES.map(runSimulation);
+const allSimData = APP_DATA.companies.map(runSimulation);
 
 // ── Active data pointers ─────────────────────────────────────────────────────
 let activeIdx = 0;
@@ -265,17 +314,23 @@ let xee = allSimData[0].xee;
 let yee = allSimData[0].yee;
 let snapshots = allSimData[0].snapshots;
 
+// ── Animation / playback state (declared here so chart init can use them) ────
+let frontier     = APP_DATA.histDays;   // = 200; "today" is index frontier-1
+let windowSize   = 100;                 // days visible at once
+let windowStart  = frontier - windowSize; // = 100; right edge starts exactly at today
+let animInterval = null;
+
 // ── Chart ────────────────────────────────────────────────────────────────────
 let chart = new Chart("first", {
   type: "line",
   data: {
-    labels:   xee.slice(0, 100),
+    labels:   xee.slice(windowStart, windowStart + windowSize),
     datasets: [{
       fill:            false,
       tension:         0,
       backgroundColor: "#850F8D",
       borderColor:     "#850F8D",
-      data:            yee.slice(0, 100)
+      data:            yee.slice(windowStart, windowStart + windowSize)
     }]
   },
   options: {
@@ -283,7 +338,7 @@ let chart = new Chart("first", {
     plugins: {
       title: {
         display: true,
-        text:    COMPANIES[0].name,
+        text:    APP_DATA.companies[0].name,
         color:   "#850f8d",
         font:    { size: 30 }
       },
@@ -296,11 +351,7 @@ let chart = new Chart("first", {
   }
 });
 
-// ── Animation / playback ─────────────────────────────────────────────────────
-let windowSize   = 100;
-let windowStart  = 0;
-let animInterval = null;
-const ANIM_SPEED = 40;
+// ── Animation / playback functions ───────────────────────────────────────────
 
 function showWindow() {
   let end = windowStart + windowSize;
@@ -312,6 +363,28 @@ function showWindow() {
   updateTable();
   updateTradingDisplay();
   updatePortfolioCharts();
+  updateNavButtons();
+}
+
+// Enable / disable nav + buy buttons based on current position and trade state
+function updateNavButtons() {
+  let atStart    = windowStart <= 0;
+  let atFrontier = windowStart + windowSize >= frontier;
+  let hasBought  = trades.some(t => t.hasBought);
+  // Can go forward if: in the past (behind frontier), OR invested with future data left
+  let canFwd     = !atFrontier || (hasBought && frontier < xee.length);
+  ['btnPlay', 'portBtnPlay'].forEach(id => {
+    let el = document.getElementById(id);
+    if (el) el.disabled = !canFwd;
+  });
+  ['btnBack', 'portBtnBack'].forEach(id => {
+    let el = document.getElementById(id);
+    if (el) el.disabled = atStart;
+  });
+  // Buy only allowed at the leading edge of time ("today" or later)
+  let compTrade = trades[activeIdx];
+  let buyBtn    = document.getElementById('btnBuy');
+  if (buyBtn) buyBtn.disabled = compTrade.hasBought || !atFrontier;
 }
 
 function jumpToView(n) {
@@ -325,21 +398,28 @@ function jumpToView(n) {
 }
 
 function playForward() {
-  if (!trades.some(t => t.hasBought)) return;
+  // Guard: nothing to do if already at frontier with no open position
+  let atFrontier = windowStart + windowSize >= frontier;
+  if (atFrontier && (!trades.some(t => t.hasBought) || frontier >= xee.length)) return;
   stopAnim();
   ['btnPlay','portBtnPlay'].forEach(id => {
     let el = document.getElementById(id); if (el) el.classList.add('active');
   });
   animInterval = setInterval(() => {
-    if (windowStart + windowSize >= xee.length) { stopAnim(); return; }
+    let atF = windowStart + windowSize >= frontier;
+    if (atF) {
+      // At the leading edge — only advance if invested and future data exists
+      if (!trades.some(t => t.hasBought) || frontier >= xee.length) { stopAnim(); return; }
+      frontier++;   // reveal one new future day
+    }
     windowStart++;
     showWindow();
-    // Check auto-sell for every company that has an open position
+    // Auto-sell check for every open position
     let idx = windowStart + windowSize - 1;
     trades.forEach((t, ci) => {
       if (t.hasBought && allSimData[ci].yee[idx] >= t.sellTarget) sellStock(true, ci);
     });
-  }, ANIM_SPEED);
+  }, APP_DATA.animSpeed);
 }
 
 function playBackward() {
@@ -351,7 +431,7 @@ function playBackward() {
     if (windowStart <= 0) { stopAnim(); return; }
     windowStart--;
     showWindow();
-  }, ANIM_SPEED);
+  }, APP_DATA.animSpeed);
 }
 
 function stopAnim() {
@@ -359,6 +439,7 @@ function stopAnim() {
   ['btnPlay','btnBack','portBtnPlay','portBtnBack'].forEach(id => {
     let el = document.getElementById(id); if (el) el.classList.remove('active');
   });
+  updateNavButtons();
 }
 
 // ── Company switching ────────────────────────────────────────────────────────
@@ -389,6 +470,8 @@ function updateTable() {
 
   // Top valuation card
   let premium = (price - snap.intrinsic) / snap.intrinsic * 100;
+  let nameEl  = document.getElementById('tCompanyName');
+  if (nameEl) nameEl.textContent = APP_DATA.companies[activeIdx].name;
   document.getElementById('tDate').textContent      = xee[idx];
   document.getElementById('tPrice').textContent     = price.toFixed(2);
   document.getElementById('tIntrinsic').textContent = snap.intrinsic.toFixed(2);
@@ -454,9 +537,6 @@ function buyStock() {
 
   lastSales[activeIdx] = null;
   t.intrinsicAtBuy = snapshots[windowStart + windowSize - 1].intrinsic;
-  ['btnPlay','portBtnPlay'].forEach(id => {
-    let el = document.getElementById(id); if (el) el.disabled = false;
-  });
   document.getElementById('btnBuy').disabled           = true;
   document.getElementById('btnSellNow').disabled       = false;
   document.getElementById('tradeInvest').disabled      = true;
@@ -465,6 +545,7 @@ function buyStock() {
   document.getElementById('shareEstimate').textContent = '';
   updateBalanceDisplay();
   updateTradingDisplay();
+  updateNavButtons();   // re-evaluate Forward now that hasBought changed
 }
 
 function sellStock(auto, compIdx) {
@@ -493,13 +574,12 @@ function sellStock(auto, compIdx) {
   if (compIdx === activeIdx) {
     document.getElementById('tradeResult').innerHTML =
       `<span class="tr-label">Trade closed ${auto ? '(auto-sell at target)' : '(manual sell)'}</span><br>` +
-      `${COMPANIES[compIdx].name} &mdash; Invested&nbsp;<b>${t.buyInvested.toFixed(2)}</b>&nbsp;` +
+      `${APP_DATA.companies[compIdx].name} &mdash; Invested&nbsp;<b>${t.buyInvested.toFixed(2)}</b>&nbsp;` +
       `(${t.buyShares.toFixed(4)}&nbsp;shares&nbsp;@&nbsp;${t.buyPrice.toFixed(2)})<br>` +
       `Sold&nbsp;@&nbsp;<b>${price.toFixed(2)}</b>&emsp;` +
       `P&amp;L:&nbsp;<b class="${sign?'pnl-pos':'pnl-neg'}">${sign?'+':''}${pnl.toFixed(2)}&nbsp;(${sign?'+':''}${pct.toFixed(1)}%)</b>` +
       `&emsp;Portfolio:&nbsp;<b>${portfolioBalance.toFixed(2)}</b>`;
     document.getElementById('tradeLive').innerHTML      = '';
-    document.getElementById('btnBuy').disabled          = false;
     document.getElementById('btnSellNow').disabled      = true;
     document.getElementById('tradeInvest').disabled     = false;
     document.getElementById('tradeSellTarget').disabled = false;
@@ -509,16 +589,12 @@ function sellStock(auto, compIdx) {
   t.hasBought = false; t.buyPrice = 0; t.buyShares = 0;
   t.buyInvested = 0;   t.sellTarget = 0;
 
-  // If no positions remain, disable Forward and stop animation
-  if (!trades.some(t => t.hasBought)) {
-    stopAnim();
-    ['btnPlay','portBtnPlay'].forEach(id => {
-      let el = document.getElementById(id); if (el) el.disabled = true;
-    });
-  }
+  // If no positions remain, stop animation (updateNavButtons will re-evaluate buttons)
+  if (!trades.some(t => t.hasBought)) stopAnim();
 
   updateBalanceDisplay();
   updatePortfolioCharts();   // always refresh cards so sold/held state shows immediately
+  updateNavButtons();        // re-evaluate forward/buy button states
 }
 
 function updateBalanceDisplay() {
@@ -534,13 +610,14 @@ function updateBalanceDisplay() {
 
 function updateDescription(idx) {
   let el = document.getElementById('companyDesc');
-  if (el) el.textContent = COMPANIES[idx].description;
+  if (el) el.textContent = APP_DATA.companies[idx].description;
 }
 
 // Called when switching company: sync buy/sell buttons to that company's trade state
 function updateTradePanelForCompany(idx) {
-  let t = trades[idx];
-  document.getElementById('btnBuy').disabled           = t.hasBought;
+  let t       = trades[idx];
+  let atToday = windowStart + windowSize >= frontier;   // can only buy at the leading edge
+  document.getElementById('btnBuy').disabled           = t.hasBought || !atToday;
   document.getElementById('btnSellNow').disabled       = !t.hasBought;
   document.getElementById('tradeInvest').disabled      = t.hasBought;
   document.getElementById('tradeSellTarget').disabled  = t.hasBought;
@@ -583,7 +660,7 @@ function endInvesting() {
 }
 
 function showSummaryPage() {
-  const START    = 10000;
+  const START    = APP_DATA.startingBalance;
   const finalBal = portfolioBalance;
   const totalPnl = finalBal - START;
   const totalPct = totalPnl / START * 100;
@@ -593,7 +670,7 @@ function showSummaryPage() {
   let cards = '';
   let tradedCount = 0;
 
-  COMPANIES.forEach((comp, i) => {
+  APP_DATA.companies.forEach((comp, i) => {
     let ls = lastSales[i];
     if (!ls) return;
     tradedCount++;
@@ -617,7 +694,7 @@ function showSummaryPage() {
     cards += `
       <div class="sum-card">
         <div class="sum-card-header">
-          <span class="sum-comp-name" style="color:${COMP_COLORS[i]}">${comp.name}</span>
+          <span class="sum-comp-name" style="color:${APP_DATA.companies[i].color}">${comp.name}</span>
           <span class="sum-pnl ${ls.sign?'pnl-pos':'pnl-neg'}">${ls.sign?'+':''}${ls.pnl.toFixed(2)}&nbsp;(${ls.sign?'+':''}${ls.pct.toFixed(1)}%)</span>
         </div>
         <div class="sum-row">
@@ -650,9 +727,9 @@ function showSummaryPage() {
   }
 
   // ── untouched companies ───────────────────────────────────────────────────
-  let untouched = COMPANIES
+  let untouched = APP_DATA.companies
     .map((c, i) => lastSales[i] ? null :
-      `<span style="color:${COMP_COLORS[i]}">${c.name}</span>`)
+      `<span style="color:${APP_DATA.companies[i].color}">${c.name}</span>`)
     .filter(Boolean).join(' &nbsp;·&nbsp; ');
   let untouchedHtml = untouched
     ? `<div class="sum-untouched"><span class="sum-cell-label">Not traded:</span> ${untouched}</div>`
@@ -695,9 +772,6 @@ function showSummaryPage() {
 let portfolioCharts    = [];
 let portfolioViewActive = false;
 
-// Distinct border colours for each company when not holding
-const COMP_COLORS = ['#850F8D', '#0F6D8D', '#8D6B0F', '#0F8D4A'];
-
 function togglePortfolioView() {
   portfolioViewActive = !portfolioViewActive;
   document.getElementById('portfolioView').style.display = portfolioViewActive ? 'block' : 'none';
@@ -710,7 +784,7 @@ function togglePortfolioView() {
 
 function initPortfolioCharts() {
   if (portfolioCharts.length > 0) return;   // already built
-  COMPANIES.forEach((comp, i) => {
+  APP_DATA.companies.forEach((comp, i) => {
     let ctx = document.getElementById('portCanvas' + i);
     portfolioCharts.push(new Chart(ctx, {
       type: 'line',
@@ -719,7 +793,7 @@ function initPortfolioCharts() {
         datasets: [
           {                                   // price line
             fill: false, tension: 0,
-            borderColor: COMP_COLORS[i],
+            borderColor: APP_DATA.companies[i].color,
             borderWidth: 1.5, pointRadius: 0,
             data: []
           },
@@ -737,9 +811,9 @@ function initPortfolioCharts() {
         maintainAspectRatio: false,
         plugins: { legend: { display: false }, title: { display: false } },
         scales: {
-          y: { ticks: { color: COMP_COLORS[i], font: { size: 10 }, maxTicksLimit: 4 },
-               grid: { color: COMP_COLORS[i] + '30' } },
-          x: { ticks: { color: COMP_COLORS[i], font: { size: 9 },  maxTicksLimit: 5 },
+          y: { ticks: { color: APP_DATA.companies[i].color, font: { size: 10 }, maxTicksLimit: 4 },
+               grid: { color: APP_DATA.companies[i].color + '30' } },
+          x: { ticks: { color: APP_DATA.companies[i].color, font: { size: 9 },  maxTicksLimit: 5 },
                grid: { display: false } }
         }
       }
@@ -750,8 +824,8 @@ function initPortfolioCharts() {
 function buildPortCardInfo(i, curPrice) {
   let t  = trades[i];
   let ls = lastSales[i];
-  let c  = COMP_COLORS[i];
-  let n  = COMPANIES[i].name;
+  let c  = APP_DATA.companies[i].color;
+  let n  = APP_DATA.companies[i].name;
 
   if (t.hasBought && curPrice != null) {
     let pnl  = (curPrice - t.buyPrice) * t.buyShares;
@@ -795,7 +869,7 @@ function updatePortfolioCharts() {
   if (!portfolioViewActive || portfolioCharts.length === 0) return;
   let end = windowStart + windowSize;
 
-  COMPANIES.forEach((comp, i) => {
+  APP_DATA.companies.forEach((comp, i) => {
     let pc       = portfolioCharts[i];
     let data     = allSimData[i];
     let t        = trades[i];
@@ -812,7 +886,7 @@ function updatePortfolioCharts() {
       let ref = new Array(Math.min(windowSize, end - windowStart)).fill(t.buyPrice);
       pc.data.datasets[1].data.splice(0, pc.data.datasets[1].data.length, ...ref);
     } else {
-      pc.data.datasets[0].borderColor = COMP_COLORS[i];
+      pc.data.datasets[0].borderColor = APP_DATA.companies[i].color;
       pc.data.datasets[1].data.splice(0, pc.data.datasets[1].data.length);
     }
     pc.update();
@@ -859,7 +933,7 @@ function updateCalcFields() {
   if (!refEl) return;
   if (type !== 'market') { refEl.style.display = 'none'; return; }
 
-  let rows = INDUSTRY_MULTIPLES.map(r =>
+  let rows = APP_DATA.industryMultiples.map(r =>
     `<tr><td class="sl">${r.sector}</td><td class="sv">${r.low} – ${r.high}×</td></tr>`
   ).join('');
   refEl.innerHTML =
@@ -913,7 +987,42 @@ function calculateValuation() {
   }
 }
 
-// Start at the beginning of history
+// ─────────────────────────────────────────────────────────────────────────────
+// Dynamic UI builders — turn APP_DATA.companies into DOM elements
+// ─────────────────────────────────────────────────────────────────────────────
+function buildCompanyTabs() {
+  let host = document.getElementById('companyTabs');
+  if (!host) return;
+  // Insert tabs BEFORE the balance chip (which is already inside the host)
+  let chip = host.querySelector('.balance-chip');
+  APP_DATA.companies.forEach((comp, i) => {
+    let b = document.createElement('button');
+    b.className   = 'tab-btn' + (i === 0 ? ' active' : '');
+    b.id          = 'tab' + i;
+    b.textContent = comp.name;
+    b.onclick     = () => switchCompany(i);
+    host.insertBefore(b, chip);
+  });
+}
+
+function buildPortfolioCards() {
+  let grid = document.getElementById('portfolioGrid');
+  if (!grid) return;
+  APP_DATA.companies.forEach((comp, i) => {
+    grid.insertAdjacentHTML('beforeend',
+      `<div class="port-card" id="portCard${i}">
+         <div id="portInfo${i}"></div>
+         <div class="port-chart-wrap"><canvas id="portCanvas${i}"></canvas></div>
+       </div>`);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Startup — at this point every reference to APP_DATA has already been made,
+// so swapping the literal for a `fetch().then(...)` is a one-line change.
+// ─────────────────────────────────────────────────────────────────────────────
+buildCompanyTabs();
+buildPortfolioCards();
 showWindow();
 updateCalcFields();
 updateBalanceDisplay();

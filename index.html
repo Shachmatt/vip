@@ -7,14 +7,11 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="company-tabs">
-  <button class="tab-btn active" id="tab0" onclick="switchCompany(0)">Investigo a.s.</button>
-  <button class="tab-btn"        id="tab1" onclick="switchCompany(1)">TechGrow s.r.o.</button>
-  <button class="tab-btn"        id="tab2" onclick="switchCompany(2)">ValueCorp a.s.</button>
-  <button class="tab-btn"        id="tab3" onclick="switchCompany(3)">Industrial a.s.</button>
+<!-- Tab buttons are built from APP_DATA.companies at startup (see buildCompanyTabs in index.js) -->
+<div class="company-tabs" id="companyTabs">
   <div class="balance-chip">
     <span class="balance-label">Portfolio</span>
-    <span class="balance-value" id="balanceAmt">10&nbsp;000.00</span>
+    <span class="balance-value" id="balanceAmt">—</span>
     <span class="balance-invested" id="balanceInvested"></span>
   </div>
 </div>
@@ -65,33 +62,12 @@
     <button class="flexer port-ctrl-btn" id="portBtnPlay"  onclick="playForward()" disabled>Forward &#9654;</button>
   </div>
 
-  <div class="portfolio-grid">
-
-    <div class="port-card" id="portCard0">
-      <div id="portInfo0"></div>
-      <div class="port-chart-wrap"><canvas id="portCanvas0"></canvas></div>
-    </div>
-
-    <div class="port-card" id="portCard1">
-      <div id="portInfo1"></div>
-      <div class="port-chart-wrap"><canvas id="portCanvas1"></canvas></div>
-    </div>
-
-    <div class="port-card" id="portCard2">
-      <div id="portInfo2"></div>
-      <div class="port-chart-wrap"><canvas id="portCanvas2"></canvas></div>
-    </div>
-
-    <div class="port-card" id="portCard3">
-      <div id="portInfo3"></div>
-      <div class="port-chart-wrap"><canvas id="portCanvas3"></canvas></div>
-    </div>
-
-  </div>
+  <!-- Cards are built from APP_DATA.companies at startup (see buildPortfolioCards in index.js) -->
+  <div class="portfolio-grid" id="portfolioGrid"></div>
 </div>
 
 <div class="company-table">
-  <div class="table-title">Společnost &mdash; <span id="tDate">—</span></div>
+  <div class="table-title"><span id="tCompanyName">—</span> &mdash; <span id="tDate">—</span></div>
   <p class="company-desc" id="companyDesc"></p>
   <div class="table-row">
     <div class="table-cell">
