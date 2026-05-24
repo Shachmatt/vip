@@ -25,7 +25,7 @@ const APP_DATA = {
   valueImp:        0.03,   // mean-reversion strength
   volBase:         0.05,   // base volatility (scaled by intrinsic per company)
   fcfVolatility:   0.1,
-  animSpeed:       40,     // ms per playback tick
+  animSpeed:       20,     // ms per playback tick
   startingBalance: 10000,  // starting portfolio cash
 
   // ── EV/EBITDA reference multiples by sector (calculator helper) ──────────
@@ -50,6 +50,7 @@ const APP_DATA = {
       type:        3,           // Gordon growth model
       stockNum:    1.5,
       FCF:         [30, 33, 36],
+      FCFPast:     [10, 30, 15], //the first value is 3 years back, second is 2 years back, third is one year back
       YoY:         0.10,
       growth:      0.04,
       assets:      150,
@@ -72,6 +73,8 @@ const APP_DATA = {
       type:        2,           // DCF — high-growth tech
       stockNum:    2,
       FCF:         [15, 22, 32],
+      FCFPast:     [4,7, 10],
+
       YoY:         0.25,
       growth:      0.08,
       assets:      80,
@@ -94,6 +97,7 @@ const APP_DATA = {
       type:        1,           // NAV — asset-heavy holding
       stockNum:    3,
       FCF:         [20, 21, 22],
+      FCFPast:     [14, 20, 17],
       YoY:         0.04,
       growth:      0.02,
       assets:      600,
@@ -117,6 +121,8 @@ const APP_DATA = {
       type:        4,           // Market multiple — manufacturing
       stockNum:    2,
       FCF:         [35, 37, 39],
+      FCFPast:     [24, 31, 33],
+
       YoY:         0.06,
       growth:      0.02,
       assets:      350,
@@ -217,6 +223,7 @@ function runSimulation(cfg) {
     EBITDA:   cfg.EBITDA   * 1e6,
     cash:     cfg.cash     * 1e6,
     FCF:      cfg.FCF.map(v => v * 1e6),
+    FCFPast: cfg.FCFPast.map(v=> v * 1e6)
   };
   let lCompStart = JSON.parse(JSON.stringify(lComp));
 
@@ -490,14 +497,28 @@ function updateTable() {
   document.getElementById('sShares').textContent    = (allSimData[activeIdx].stockNum / 1e6).toFixed(2) + ' M';
   document.getElementById('sMarketCap').textContent = M(price * allSimData[activeIdx].stockNum);
 
-  // Historical FCF + Dividend (91-day lookback per quarter)
-  [0, 91, 182, 273].forEach((offset, i) => {
-    let pi = idx - offset;
-    let ok = pi >= 0 && snapshots[pi];
-    document.getElementById('fcq' + i).textContent = ok ? M(snapshots[pi].fcf) : '—';
-    let dEl = document.getElementById('dq' + i);
-    if (dEl) dEl.textContent = ok ? snapshots[pi].dividend.toFixed(2) : '—';
-  });
+  // Yearly history — FCF from FCFPast array, dividend extrapolated backwards by divGrowth
+  const cfg = APP_DATA.companies[activeIdx];
+  // FCF Y0 = current snapshot's FCF (already scaled ×1e6); FCFPast values are raw millions
+  const fcfYearly = [
+    snap.fcf / 1e6,            // current
+    cfg.FCFPast?.[2] ?? null,  // 1 year ago
+    cfg.FCFPast?.[1] ?? null,  // 2 years ago
+    cfg.FCFPast?.[0] ?? null   // 3 years ago
+  ];
+  const g = cfg.divGrowth || 0;
+  const divYearly = [
+    snap.dividend,                            // current
+    snap.dividend / Math.pow(1 + g, 1),       // 1 yr ago
+    snap.dividend / Math.pow(1 + g, 2),       // 2 yrs ago
+    snap.dividend / Math.pow(1 + g, 3)        // 3 yrs ago
+  ];
+  for (let i = 0; i < 4; i++) {
+    let fEl = document.getElementById('fcy' + i);
+    let dEl = document.getElementById('dy' + i);
+    if (fEl) fEl.textContent = fcfYearly[i] != null ? fcfYearly[i].toFixed(1) + ' M' : '—';
+    if (dEl) dEl.textContent = divYearly[i] != null ? divYearly[i].toFixed(2) : '—';
+  }
 }
 
 // ── Trading ───────────────────────────────────────────────────────────────────

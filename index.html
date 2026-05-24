@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<div class="page">
 <!-- Tab buttons are built from APP_DATA.companies at startup (see buildCompanyTabs in index.js) -->
 <div class="company-tabs" id="companyTabs">
   <div class="balance-chip">
@@ -16,7 +17,9 @@
   </div>
 </div>
 
-    <canvas id="first" style="width:100%; background-color: #f8f9d7; color: #c738bd; max-height: 400px;"></canvas>
+<div class="chart-wrap">
+  <canvas id="first"></canvas>
+</div>
 
 <div class="flex-container controls">
   <button class="flexer" id="btnBack"  onclick="playBackward()">&#9664; Backward</button>
@@ -75,12 +78,12 @@
       <div class="cell-value" id="tPrice">—</div>
     </div>
     <div class="table-cell">
-      <div class="cell-label ">Intrinsic Value</div>
-      <div class="cell-value " id="tIntrinsic">—</div>
+      <div class="cell-label invisible">Intrinsic Value</div>
+      <div class="cell-value invisible" id="tIntrinsic">—</div>
     </div>
     <div class="table-cell">
-      <div class="cell-label ">vs. Intrinsic</div>
-      <div class="cell-value " id="tPremium">—</div>
+      <div class="cell-label invisible ">vs. Intrinsic</div>
+      <div class="cell-value invisible" id="tPremium">—</div>
     </div>
     <div class="table-cell">
       <div class="cell-label">FCF Year 1</div>
@@ -110,16 +113,16 @@
     </div>
 
     <div class="raw-section">
-      <div class="table-title">Quarterly History</div>
+      <div class="table-title">Yearly History</div>
       <table class="stats-table">
         <thead>
-          <tr><th class="sl">Period</th><th class="sv">FCF Y1</th><th class="sv">Dividend</th></tr>
+          <tr><th class="sl">Year</th><th class="sv">FCF</th><th class="sv">Dividend / share</th></tr>
         </thead>
         <tbody>
-          <tr><td class="sl">Current Q</td>  <td class="sv" id="fcq0">—</td><td class="sv" id="dq0">—</td></tr>
-          <tr><td class="sl">1Q ago</td>      <td class="sv" id="fcq1">—</td><td class="sv" id="dq1">—</td></tr>
-          <tr><td class="sl">2Q ago</td>      <td class="sv" id="fcq2">—</td><td class="sv" id="dq2">—</td></tr>
-          <tr><td class="sl">3Q ago (~1 yr)</td><td class="sv" id="fcq3">—</td><td class="sv" id="dq3">—</td></tr>
+          <tr><td class="sl">Current</td>   <td class="sv" id="fcy0">—</td><td class="sv" id="dy0">—</td></tr>
+          <tr><td class="sl">1&nbsp;yr ago</td> <td class="sv" id="fcy1">—</td><td class="sv" id="dy1">—</td></tr>
+          <tr><td class="sl">2&nbsp;yrs ago</td><td class="sv" id="fcy2">—</td><td class="sv" id="dy2">—</td></tr>
+          <tr><td class="sl">3&nbsp;yrs ago</td><td class="sv" id="fcy3">—</td><td class="sv" id="dy3">—</td></tr>
         </tbody>
       </table>
     </div>
@@ -146,6 +149,8 @@
     <div id="calcResult" class="calc-result"></div>
   </div>
 </div>
+
+</div><!-- /.page -->
 
 <!-- ── Summary / End-Investing page ──────────────────────────────────────── -->
 <div id="summaryPage" style="display:none"></div>
